@@ -584,6 +584,62 @@ static PyObject* SdBus_emit_object_added(SdBusObject* self, PyObject* args) {
 }
 
 #ifndef Py_LIMITED_API
+static PyObject* SdBus_set_method_call_timeout(SdBusObject* self, PyObject* const* args, Py_ssize_t nargs) {
+        SD_BUS_PY_CHECK_ARGS_NUMBER(1);
+        SD_BUS_PY_CHECK_ARG_TYPE(0, PyLong_Type);
+
+        uint64_t timeout_usecs = PyLong_AsUnsignedLongLong(args[0]);
+#else
+static PyObject* SdBus_set_method_call_timeout(SdBusObject* self, PyObject* args) {
+        uint64_t timeout_usecs = 0;
+        CALL_PYTHON_BOOL_CHECK(PyArg_ParseTuple(args, "K", &timeout_usecs, NULL));
+#endif
+        CALL_SD_BUS_AND_CHECK(sd_bus_set_method_call_timeout(self->sd_bus_ref, timeout_usecs));
+
+        Py_RETURN_NONE;
+}
+
+#ifndef Py_LIMITED_API
+static PyObject* SdBus_get_method_call_timeout(SdBusObject* self, PyObject* const* Py_UNUSED(args), Py_ssize_t nargs) {
+        SD_BUS_PY_CHECK_ARGS_NUMBER(0);
+#else
+static PyObject* SdBus_get_method_call_timeout(SdBusObject* self, PyObject* Py_UNUSED(args)) {
+#endif
+        uint64_t timeout_usecs = 0;
+        CALL_SD_BUS_AND_CHECK(sd_bus_get_method_call_timeout(self->sd_bus_ref, &timeout_usecs));
+
+        return PyLong_FromUnsignedLongLong(timeout_usecs);
+}
+
+#ifndef Py_LIMITED_API
+static PyObject* SdBus_negotiate_creds(SdBusObject* self, PyObject* const* args, Py_ssize_t nargs) {
+        SD_BUS_PY_CHECK_ARGS_NUMBER(2);
+        SD_BUS_PY_CHECK_ARG_TYPE(0, PyBool_Type);
+        SD_BUS_PY_CHECK_ARG_TYPE(1, PyLong_Type);
+        int mask_on = args[0] == Py_True;
+        uint64_t mask = PyLong_AsUnsignedLongLong(args[1]);
+#else
+static PyObject* SdBus_negotiate_creds(SdBusObject* self, PyObject* args) {
+        int mask_on = 0;
+        uint64_t mask = 0;
+        CALL_PYTHON_BOOL_CHECK(PyArg_ParseTuple(args, "pK", &mask_on, &mask, NULL));
+#endif
+        CALL_SD_BUS_AND_CHECK(sd_bus_negotiate_creds(self->sd_bus_ref, mask_on, mask));
+        Py_RETURN_NONE;
+}
+
+#ifndef Py_LIMITED_API
+static PyObject* SdBus_get_creds_mask(SdBusObject* self, PyObject* Py_UNUSED(args), Py_ssize_t nargs) {
+        SD_BUS_PY_CHECK_ARGS_NUMBER(0);
+#else
+static PyObject* SdBus_get_creds_mask(SdBusObject* self, PyObject* Py_UNUSED(args)) {
+#endif
+        uint64_t mask = 0;
+        CALL_SD_BUS_AND_CHECK(sd_bus_get_creds_mask(self->sd_bus_ref, &mask));
+        return PyLong_FromUnsignedLongLong(mask);
+}
+
+#ifndef Py_LIMITED_API
 static PyObject* SdBus_emit_object_removed(SdBusObject* self, PyObject* const* args, Py_ssize_t nargs) {
         SD_BUS_PY_CHECK_ARGS_NUMBER(1);
         SD_BUS_PY_CHECK_ARG_CHECK_FUNC(0, PyUnicode_Check);
@@ -628,6 +684,11 @@ static PyMethodDef SdBus_methods[] = {
     {"request_name", (SD_BUS_PY_FUNC_TYPE)SdBus_request_name, SD_BUS_PY_METH, "Request dbus name blocking"},
     {"add_object_manager", (SD_BUS_PY_FUNC_TYPE)SdBus_add_object_manager, SD_BUS_PY_METH, "Add object manager at the path"},
     {"emit_object_added", (SD_BUS_PY_FUNC_TYPE)SdBus_emit_object_added, SD_BUS_PY_METH, "Emit signal that object was added"},
+    {"set_method_call_timeout", (SD_BUS_PY_FUNC_TYPE)SdBus_set_method_call_timeout, SD_BUS_PY_METH, "Set the default method call timeout"},
+    {"get_method_call_timeout", (SD_BUS_PY_FUNC_TYPE)SdBus_get_method_call_timeout, SD_BUS_PY_METH, "Get the default method call timeout"},
+    {"negotiate_creds", (SD_BUS_PY_FUNC_TYPE)SdBus_negotiate_creds, SD_BUS_PY_METH,
+     "Specify a mask of credentials to automatically attach to incoming messages"},
+    {"get_creds_mask", (SD_BUS_PY_FUNC_TYPE)SdBus_get_creds_mask, SD_BUS_PY_METH, "Get the current negotated credentials mask"},
     {"emit_object_removed", (SD_BUS_PY_FUNC_TYPE)SdBus_emit_object_removed, SD_BUS_PY_METH, "Emit signal that object was removed"},
     {"close", (PyCFunction)SdBus_close, METH_NOARGS, "Close connection"},
     {"start", (PyCFunction)SdBus_start, METH_NOARGS, "Start connection"},
@@ -646,8 +707,16 @@ static PyObject* SdBus_address_getter(SdBusObject* self, void* Py_UNUSED(closure
         return PyUnicode_FromString(bus_address);
 }
 
-static PyGetSetDef SdBus_properies[] = {
+static PyObject* SdBus_unique_name_getter(SdBusObject* self, void* Py_UNUSED(closure)) {
+        const char* unique_name = NULL;
+        CALL_SD_BUS_AND_CHECK(sd_bus_get_unique_name(self->sd_bus_ref, &unique_name));
+
+        return PyUnicode_FromString(unique_name);
+}
+
+static PyGetSetDef SdBus_properties[] = {
     {"address", (getter)SdBus_address_getter, NULL, "Bus address", NULL},
+    {"unique_name", (getter)SdBus_unique_name_getter, NULL, "Get the unique name of the bus object on the bus", NULL},
     {0},
 };
 
@@ -662,7 +731,7 @@ PyType_Spec SdBusType = {
             {Py_tp_init, (initproc)SdBus_init},
             {Py_tp_dealloc, (destructor)SdBus_dealloc},
             {Py_tp_methods, SdBus_methods},
-            {Py_tp_getset, SdBus_properies},
+            {Py_tp_getset, SdBus_properties},
             {0, NULL},
         },
 };

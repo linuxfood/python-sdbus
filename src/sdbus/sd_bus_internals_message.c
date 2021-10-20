@@ -979,6 +979,14 @@ static PyObject* SdBusMessage_get_contents2(SdBusMessageObject* self, PyObject* 
         return iter_tuple_or_single(&read_parser);
 }
 
+static SdBusCredsObject* SdBusMessage_get_creds(SdBusMessageObject* self, PyObject* Py_UNUSED(args)) {
+        SdBusCredsObject* new_creds_object CLEANUP_SD_BUS_CREDS =
+            (SdBusCredsObject*)CALL_PYTHON_AND_CHECK(PyObject_CallFunctionObjArgs(SdBusCreds_class, NULL));
+        _SdBusCreds_set_creds_from_message(new_creds_object, self->message_ref);
+        Py_INCREF(new_creds_object);
+        return new_creds_object;
+}
+
 #ifndef Py_LIMITED_API
 static SdBusMessageObject* SdBusMessage_create_error_reply(SdBusMessageObject* self, PyObject* const* args, Py_ssize_t nargs) {
         SD_BUS_PY_CHECK_ARGS_NUMBER(2);
@@ -1011,6 +1019,7 @@ static PyMethodDef SdBusMessage_methods[] = {
     {"dump", (PyCFunction)SdBusMessage_dump, METH_NOARGS, "Dump message to stdout"},
     {"seal", (PyCFunction)SdBusMessage_seal, METH_NOARGS, "Seal message contents"},
     {"get_contents", (PyCFunction)SdBusMessage_get_contents2, METH_NOARGS, "Iterate over message contents"},
+    {"get_credentials", (PyCFunction)SdBusMessage_get_creds, METH_NOARGS, "Get message credentials"},
     {"create_reply", (PyCFunction)SdBusMessage_create_reply, METH_NOARGS, "Create reply message"},
     {"create_error_reply", (SD_BUS_PY_FUNC_TYPE)SdBusMessage_create_error_reply, SD_BUS_PY_METH, "Create error reply with error name and error message"},
     {"send", (PyCFunction)SdBusMessage_send, METH_NOARGS, "Queue message to be sent"},

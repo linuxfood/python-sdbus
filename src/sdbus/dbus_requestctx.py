@@ -17,28 +17,34 @@
 # You should have received a copy of the GNU Lesser General Public
 # License along with this library; if not, write to the Free Software
 # Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301 USA
-from __future__ import annotations
+from contextvars import ContextVar, Token
+from typing import Generic, Optional, Type, TypeVar
 
-from unittest import main
+from sdbus.sd_bus_internals import SdBusCreds
 
-from sdbus.unittest import IsolatedDbusTestCase
-from sdbus_async.dbus_daemon import FreedesktopDbus
-
-
-class TestFreedesktopDbus(IsolatedDbusTestCase):
-    async def test_connection(self) -> None:
-        dbus_object = FreedesktopDbus(self.bus)
-
-        await dbus_object.dbus_ping()
-        await dbus_object.dbus_introspect()
-        await dbus_object.dbus_machine_id()
-        self.assertIsInstance(self.bus.unique_name, str)
-        self.assertIsInstance(await dbus_object.get_id(), str)
-        self.assertIsInstance(await dbus_object.features, list)
-
-        with self.subTest('Check __name__'):
-            self.assertEqual(FreedesktopDbus.__name__, 'FreedesktopDbus')
+_T = TypeVar("_T")
+_U = TypeVar("_U")
 
 
-if __name__ == "__main__":
-    main()
+class RequestVar(Generic[_T]):
+    def __init__(self, name: str) -> None:
+        self.var = ContextVar[_T](name)
+
+    def set(self, new_value: _T) -> Token[_T]:
+        return self.var.set(new_value)
+
+    def reset(self, token: Token[_T]) -> None:
+        self.var.reset(token)
+
+    def __get__(self, _instance: _U, _owner: Optional[Type[_U]] = None) -> _T:
+        return self.var.get()
+
+
+MESSAGE_SENDER_VAR = RequestVar[str]("request sender")
+MESSAGE_CREDS_VAR = RequestVar[SdBusCreds]("request credentials")
+
+
+class DbusRequestContext:
+
+    sender = MESSAGE_SENDER_VAR
+    credentials = MESSAGE_CREDS_VAR

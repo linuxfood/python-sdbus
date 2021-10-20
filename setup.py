@@ -144,6 +144,7 @@ if __name__ == '__main__':
                 [
                     'src/sdbus/sd_bus_internals.c',
                     'src/sdbus/sd_bus_internals_bus.c',
+                    'src/sdbus/sd_bus_internals_creds.c',
                     'src/sdbus/sd_bus_internals_funcs.c',
                     'src/sdbus/sd_bus_internals_interface.c',
                     'src/sdbus/sd_bus_internals_message.c',

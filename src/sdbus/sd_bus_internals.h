@@ -322,6 +322,24 @@ extern void _SdBusMessage_set_messsage(SdBusMessageObject* self, sd_bus_message*
 extern PyType_Spec SdBusMessageType;
 extern PyObject* SdBusMessage_class;
 
+// SdBusCreds
+typedef struct {
+        PyObject_HEAD;
+        sd_bus_creds* creds_ref;
+} SdBusCredsObject;
+
+extern PyType_Spec SdBusCredsType;
+extern PyObject* SdBusCreds_class;
+
+__attribute__((used)) static inline void cleanup_SdBusCreds(SdBusCredsObject** object) {
+        Py_XDECREF(*object);
+}
+
+extern void _SdBusCreds_set_creds_from_message(SdBusCredsObject* self, sd_bus_message* new_message);
+extern PyObject* _SdBusCreds_sdbus_module_init(PyObject* module);
+
+#define CLEANUP_SD_BUS_CREDS __attribute__((cleanup(cleanup_SdBusCreds)))
+
 // SdBus
 typedef struct {
         PyObject_HEAD;

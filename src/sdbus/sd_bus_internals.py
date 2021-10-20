@@ -119,6 +119,9 @@ class SdBusMessage:
                      ) -> Tuple[DbusCompleteTypes, ...]:
         raise NotImplementedError(__STUB_ERROR)
 
+    def get_credentials(self) -> SdBusCreds:
+        raise NotImplementedError(__STUB_ERROR)
+
     def create_reply(self) -> SdBusMessage:
         raise NotImplementedError(__STUB_ERROR)
 
@@ -137,6 +140,145 @@ class SdBusMessage:
     interface: Optional[str] = None
     member: Optional[str] = None
     sender: Optional[str] = None
+
+
+class SdBusCreds:
+
+    @property
+    def mask(self) -> Optional[int]:
+        raise NotImplementedError(__STUB_ERROR)
+
+    @property
+    def pid(self) -> Optional[int]:
+        raise NotImplementedError(__STUB_ERROR)
+
+    @property
+    def ppid(self) -> Optional[int]:
+        raise NotImplementedError(__STUB_ERROR)
+
+    @property
+    def tid(self) -> Optional[int]:
+        raise NotImplementedError(__STUB_ERROR)
+
+    @property
+    def uid(self) -> Optional[int]:
+        raise NotImplementedError(__STUB_ERROR)
+
+    @property
+    def euid(self) -> Optional[int]:
+        raise NotImplementedError(__STUB_ERROR)
+
+    @property
+    def suid(self) -> Optional[int]:
+        raise NotImplementedError(__STUB_ERROR)
+
+    @property
+    def fsuid(self) -> Optional[int]:
+        raise NotImplementedError(__STUB_ERROR)
+
+    @property
+    def gid(self) -> Optional[int]:
+        raise NotImplementedError(__STUB_ERROR)
+
+    @property
+    def egid(self) -> Optional[int]:
+        raise NotImplementedError(__STUB_ERROR)
+
+    @property
+    def sgid(self) -> Optional[int]:
+        raise NotImplementedError(__STUB_ERROR)
+
+    @property
+    def fsgid(self) -> Optional[int]:
+        raise NotImplementedError(__STUB_ERROR)
+
+    @property
+    def supplementary_gids(self) -> Optional[tuple[int, ...]]:
+        raise NotImplementedError(__STUB_ERROR)
+
+    @property
+    def comm(self) -> Optional[str]:
+        raise NotImplementedError(__STUB_ERROR)
+
+    @property
+    def tid_comm(self) -> Optional[str]:
+        raise NotImplementedError(__STUB_ERROR)
+
+    @property
+    def exe(self) -> Optional[str]:
+        raise NotImplementedError(__STUB_ERROR)
+
+    @property
+    def cmdline(self) -> Optional[tuple[str, ...]]:
+        raise NotImplementedError(__STUB_ERROR)
+
+    @property
+    def cgroup(self) -> Optional[str]:
+        raise NotImplementedError(__STUB_ERROR)
+
+    @property
+    def unit(self) -> Optional[str]:
+        raise NotImplementedError(__STUB_ERROR)
+
+    @property
+    def slice(self) -> Optional[str]:
+        raise NotImplementedError(__STUB_ERROR)
+
+    @property
+    def user_unit(self) -> Optional[str]:
+        raise NotImplementedError(__STUB_ERROR)
+
+    @property
+    def user_slice(self) -> Optional[str]:
+        raise NotImplementedError(__STUB_ERROR)
+
+    @property
+    def session(self) -> Optional[str]:
+        raise NotImplementedError(__STUB_ERROR)
+
+    @property
+    def owner_uid(self) -> Optional[int]:
+        raise NotImplementedError(__STUB_ERROR)
+
+    @property
+    def selinux_context(self) -> Optional[str]:
+        raise NotImplementedError(__STUB_ERROR)
+
+    @property
+    def audit_session_id(self) -> Optional[int]:
+        raise NotImplementedError(__STUB_ERROR)
+
+    @property
+    def audit_login_uid(self) -> Optional[int]:
+        raise NotImplementedError(__STUB_ERROR)
+
+    @property
+    def tty(self) -> Optional[str]:
+        raise NotImplementedError(__STUB_ERROR)
+
+    @property
+    def unique_name(self) -> Optional[str]:
+        raise NotImplementedError(__STUB_ERROR)
+
+    @property
+    def well_known_names(self) -> Optional[tuple[str, ...]]:
+        raise NotImplementedError(__STUB_ERROR)
+
+    @property
+    def description(self) -> Optional[str]:
+        raise NotImplementedError(__STUB_ERROR)
+
+    def has_effective_cap(self, capability: int) -> Optional[bool]:
+        raise NotImplementedError(__STUB_ERROR)
+
+    def has_permitted_cap(self, capability: int) -> Optional[bool]:
+        raise NotImplementedError(__STUB_ERROR)
+
+    def has_inheritable_cap(self, capability: int) -> Optional[bool]:
+        raise NotImplementedError(__STUB_ERROR)
+
+    def has_bounding_cap(self, capability: int) -> Optional[bool]:
+        raise NotImplementedError(__STUB_ERROR)
 
 
 class SdBus:
@@ -201,6 +343,10 @@ class SdBus:
     def request_name(self, name: str, flags: int, /) -> None:
         raise NotImplementedError(__STUB_ERROR)
 
+    @property
+    def unique_name(self) -> str:
+        raise NotImplementedError(__STUB_ERROR)
+
     def add_object_manager(self, path: str, /) -> SdBusSlot:
         raise NotImplementedError(__STUB_ERROR)
 
@@ -217,6 +363,18 @@ class SdBus:
         raise NotImplementedError(__STUB_ERROR)
 
     address: Optional[str] = None
+
+    def set_method_call_timeout(self, timeout_usec: int) -> None:
+        raise NotImplementedError(__STUB_ERROR)
+
+    def get_method_call_timeout(self) -> int:
+        raise NotImplementedError(__STUB_ERROR)
+
+    def negotiate_creds(self, mask_on: bool, mask: int) -> None:
+        raise NotImplementedError(__STUB_ERROR)
+
+    def get_creds_mask(self) -> int:
+        raise NotImplementedError(__STUB_ERROR)
 
 
 def sd_bus_open() -> SdBus:
@@ -301,3 +459,41 @@ DbusPropertyEmitsChangeFlag: int = 0
 DbusPropertyEmitsInvalidationFlag: int = 0
 DbusPropertyExplicitFlag: int = 0
 DbusSensitiveFlag: int = 0
+
+
+DbusCredTypePID: int = 0
+DbusCredTypeTID: int = 0
+DbusCredTypePPID: int = 0
+DbusCredTypeUID: int = 0
+DbusCredTypeEUID: int = 0
+DbusCredTypeSUID: int = 0
+DbusCredTypeFSUID: int = 0
+DbusCredTypeGID: int = 0
+DbusCredTypeEGID: int = 0
+DbusCredTypeSGID: int = 0
+DbusCredTypeFSGID: int = 0
+DbusCredTypeSupplementaryGIDs: int = 0
+DbusCredTypeComm: int = 0
+DbusCredTypeTIDComm: int = 0
+DbusCredTypeEXE: int = 0
+DbusCredTypeCmdline: int = 0
+DbusCredTypeCGroup: int = 0
+DbusCredTypeUnit: int = 0
+DbusCredTypeSlice: int = 0
+DbusCredTypeUserUnit: int = 0
+DbusCredTypeUserSlice: int = 0
+DbusCredTypeSession: int = 0
+DbusCredTypeOwnerUID: int = 0
+DbusCredTypeEffectiveCaps: int = 0
+DbusCredTypePermittedCaps: int = 0
+DbusCredTypeInheritableCaps: int = 0
+DbusCredTypeBoundingCaps: int = 0
+DbusCredTypeSelinuxContext: int = 0
+DbusCredTypeAuditSessionId: int = 0
+DbusCredTypeAuditLoginUID: int = 0
+DbusCredTypeTTY: int = 0
+DbusCredTypeUniqueName: int = 0
+DbusCredTypeWellKnownNames: int = 0
+DbusCredTypeDescription: int = 0
+DbusCredTypeAugment: int = 0
+DbusAllCredTypes: int = 0

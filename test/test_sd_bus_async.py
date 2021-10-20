@@ -93,6 +93,7 @@ class TestInterface(DbusInterfaceCommonAsync,
         self.test_string_read = 'read'
         self.test_no_reply_string = 'no'
         self.no_reply_sync = Event()
+        self.echo_sender_sync = Event()
 
     @dbus_method_async("s", "s")
     async def upper(self, string: str) -> str:
@@ -274,6 +275,12 @@ class TestProxy(IsolatedDbusTestCase):
                          await test_object.upper(test_string))
 
         self.assertEqual(1, await test_object_connection.test_int())
+        self.assertEqual([":1.0", ":1.1"], await asyncio.gather(
+                         test_object_connection.echo_sender_id(False),
+                         test_object_connection2.echo_sender_id(True)))
+
+        self.assertEqual(":1.0",
+                         await test_object_connection.echo_cred_unique_name())
 
         self.assertEqual(
             test_string.upper(),

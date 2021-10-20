@@ -68,6 +68,7 @@ static PyModuleDef sd_bus_internals_module = {
 };
 
 PyObject* SdBus_class = NULL;
+PyObject* SdBusCreds_class = NULL;
 PyObject* SdBusMessage_class = NULL;
 PyObject* SdBusSlot_class = NULL;
 PyObject* SdBusInterface_class = NULL;
@@ -98,6 +99,9 @@ PyMODINIT_FUNC PyInit_sd_bus_internals(void) {
 
         SdBusSlot_class = SD_BUS_PY_INIT_TYPE_READY(SdBusSlotType);
         SD_BUS_PY_INIT_ADD_OBJECT("SdBusSlot", SdBusSlot_class);
+
+        SdBusCreds_class = SD_BUS_PY_INIT_TYPE_READY(SdBusCredsType);
+        SD_BUS_PY_INIT_ADD_OBJECT("SdBusCreds", SdBusCreds_class);
 
         SdBusInterface_class = SD_BUS_PY_INIT_TYPE_READY(SdBusInterfaceType);
         SD_BUS_PY_INIT_ADD_OBJECT("SdBusInterface", SdBusInterface_class);
@@ -154,6 +158,7 @@ PyMODINIT_FUNC PyInit_sd_bus_internals(void) {
         CALL_PYTHON_INT_CHECK(PyModule_AddIntConstant(m, "DbusPropertyExplicitFlag", SD_BUS_VTABLE_PROPERTY_EXPLICIT));
         CALL_PYTHON_INT_CHECK(PyModule_AddIntConstant(m, "DbusSensitiveFlag", SD_BUS_VTABLE_SENSITIVE));
 
+        CALL_PYTHON_AND_CHECK(_SdBusCreds_sdbus_module_init(m));
         Py_INCREF(m);
         return m;
 }
