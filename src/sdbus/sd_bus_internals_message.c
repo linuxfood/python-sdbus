@@ -1108,14 +1108,21 @@ static PyObject* SdBusMessage_sender_getter(SdBusMessageObject* self, void* Py_U
         }
 }
 
+static PyObject* SdBusMessage_cookie_getter(SdBusMessageObject* self, void* Py_UNUSED(closure)) {
+        uint64_t cookie = 0;
+        CALL_SD_BUS_AND_CHECK(sd_bus_message_get_cookie(self->message_ref, &cookie));
+        return PyLong_FromUnsignedLongLong(cookie);
+}
+
 static PyGetSetDef SdBusMessage_properies[] = {
-    {"expect_reply", (getter)SdBusMessage_expect_reply_getter, (setter)SdBusMessage_expect_reply_setter, "Expect reply message?", NULL},
+        {"expect_reply", (getter)SdBusMessage_expect_reply_getter, (setter)SdBusMessage_expect_reply_setter, "Expect reply message?", NULL},
     {"destination", (getter)SdBusMessage_destination_getter, NULL, "Message destination service name", NULL},
     {"path", (getter)SdBusMessage_path_getter, NULL, "Message destination object path", NULL},
     {"interface", (getter)SdBusMessage_interface_getter, NULL, "Message destination interface name", NULL},
     {"member", (getter)SdBusMessage_member_getter, NULL, "Message destination member name", NULL},
     {"sender", (getter)SdBusMessage_sender_getter, NULL, "Message sender name", NULL},
-    {0},
+        {"cookie", (getter)SdBusMessage_cookie_getter, NULL, "unique message cookie", NULL},
+        {0},
 };
 
 PyType_Spec SdBusMessageType = {

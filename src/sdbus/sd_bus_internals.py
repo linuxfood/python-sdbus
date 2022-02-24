@@ -139,6 +139,7 @@ class SdBusMessage:
         raise NotImplementedError(__STUB_ERROR)
 
     expect_reply: bool = False
+    cookie: int
     destination: Optional[str] = None
     path: Optional[str] = None
     interface: Optional[str] = None
