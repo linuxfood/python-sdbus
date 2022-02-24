@@ -112,7 +112,11 @@ class SdBusMessage:
     def dump(self) -> None:
         raise NotImplementedError(__STUB_ERROR)
 
-    def seal(self) -> None:
+    def seal(
+        self,
+        cookie: Optional[int] = None,
+        timeout_us: Optional[int] = None
+    ) -> None:
         raise NotImplementedError(__STUB_ERROR)
 
     def get_contents(self

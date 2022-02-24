@@ -30,8 +30,25 @@ static void SdBusMessage_dealloc(SdBusMessageObject* self) {
         SD_BUS_DEALLOC_TAIL;
 }
 
-static PyObject* SdBusMessage_seal(SdBusMessageObject* self, PyObject* Py_UNUSED(args)) {
-        CALL_SD_BUS_AND_CHECK(sd_bus_message_seal(self->message_ref, 0, 0));
+#ifndef Py_LIMITED_API
+static PyObject* SdBusMessage_seal(SdBusMessageObject* self, PyObject* const* args, Py_ssize_t nargs) {
+        uint64_t cookie = 0, timeout = 0;
+        if (nargs > 2) {
+                PyErr_Format(PyExc_TypeError, "SdBusMessage.seal() takes 1-3 positional arguments but %d were given", nargs);
+                return NULL;
+        }
+        if (nargs > 0 && !Py_IsNone(args[0])) {
+                cookie = PyLong_AsUnsignedLongLong(args[0]);
+        }
+        if (nargs > 1 && !Py_IsNone(args[1])) {
+                timeout = PyLong_AsUnsignedLongLong(args[1]);
+        }
+#else
+static PyObject* SdBusMessage_seal(SdBusMessageObject* self, PyObject* args) {
+        uint64_t cookie = 0, timeout = 0;
+        CALL_PYTHON_BOOL_CHECK(PyArg_ParseTuple(args, "|KK", &cookie, &timeout, NULL));
+#endif
+        CALL_SD_BUS_AND_CHECK(sd_bus_message_seal(self->message_ref, cookie, timeout));
         Py_RETURN_NONE;
 }
 
@@ -1017,7 +1034,7 @@ static PyMethodDef SdBusMessage_methods[] = {
     {"enter_container", (SD_BUS_PY_FUNC_TYPE)SdBusMessage_enter_container, SD_BUS_PY_METH, "Enter container for reading"},
     {"exit_container", (PyCFunction)SdBusMessage_exit_container, METH_NOARGS, "Exit container"},
     {"dump", (PyCFunction)SdBusMessage_dump, METH_NOARGS, "Dump message to stdout"},
-    {"seal", (PyCFunction)SdBusMessage_seal, METH_NOARGS, "Seal message contents"},
+    {"seal", (SD_BUS_PY_FUNC_TYPE)SdBusMessage_seal, SD_BUS_PY_METH, "Seal message contents"},
     {"get_contents", (PyCFunction)SdBusMessage_get_contents2, METH_NOARGS, "Iterate over message contents"},
     {"get_credentials", (PyCFunction)SdBusMessage_get_creds, METH_NOARGS, "Get message credentials"},
     {"create_reply", (PyCFunction)SdBusMessage_create_reply, METH_NOARGS, "Create reply message"},
