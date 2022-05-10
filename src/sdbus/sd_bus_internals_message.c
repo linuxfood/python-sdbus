@@ -1114,46 +1114,9 @@ static PyObject* SdBusMessage_cookie_getter(SdBusMessageObject* self, void* Py_U
         return PyLong_FromUnsignedLongLong(cookie);
 }
 
-static PyObject* SdBusMessage_destination_getter(SdBusMessageObject* self, void* Py_UNUSED(closure)) {
-        const char* value_ptr = sd_bus_message_get_destination(self->message_ref);
-        if (value_ptr == NULL) {
-                Py_RETURN_NONE;
-        }
-        return PyUnicode_FromString(value_ptr);
-}
-
-static PyObject* SdBusMessage_interface_getter(SdBusMessageObject* self, void* Py_UNUSED(closure)) {
-        const char* value_ptr = sd_bus_message_get_interface(self->message_ref);
-        if (value_ptr == NULL) {
-                Py_RETURN_NONE;
-        }
-        return PyUnicode_FromString(value_ptr);
-}
-
-static PyObject* SdBusMessage_member_getter(SdBusMessageObject* self, void* Py_UNUSED(closure)) {
-        const char* value_ptr = sd_bus_message_get_member(self->message_ref);
-        if (value_ptr == NULL) {
-                Py_RETURN_NONE;
-        }
-        return PyUnicode_FromString(value_ptr);
-}
-
-static PyObject* SdBusMessage_path_getter(SdBusMessageObject* self, void* Py_UNUSED(closure)) {
-        const char* value_ptr = sd_bus_message_get_path(self->message_ref);
-        if (value_ptr == NULL) {
-                Py_RETURN_NONE;
-        }
-        return PyUnicode_FromString(value_ptr);
-}
-
-
 static PyGetSetDef SdBusMessage_properies[] = {
         {"expect_reply", (getter)SdBusMessage_expect_reply_getter, (setter)SdBusMessage_expect_reply_setter, "Expect reply message?", NULL},
-    {"destination", (getter)SdBusMessage_destination_getter, NULL, "Message destination service name", NULL},
-    {"path", (getter)SdBusMessage_path_getter, NULL, "Message destination object path", NULL},
-    {"interface", (getter)SdBusMessage_interface_getter, NULL, "Message destination interface name", NULL},
-    {"member", (getter)SdBusMessage_member_getter, NULL, "Message destination member name", NULL},
-    {"sender", (getter)SdBusMessage_sender_getter, NULL, "Message sender name", NULL},
+        {"sender", (getter)SdBusMessage_sender_getter, NULL, "Message sender name", NULL},
         {"cookie", (getter)SdBusMessage_cookie_getter, NULL, "unique message cookie", NULL},
         {"destination", (getter)SdBusMessage_destination_getter, NULL, "destination bus name", NULL},
         {"interface", (getter)SdBusMessage_interface_getter, NULL, "dbus interface name", NULL},
