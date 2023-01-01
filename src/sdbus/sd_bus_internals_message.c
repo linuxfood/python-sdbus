@@ -1063,6 +1063,23 @@ static int SdBusMessage_expect_reply_setter(SdBusMessageObject* self, PyObject* 
         return 0;
 }
 
+static PyObject* SdBusMessage_timeout_usec_getter(SdBusMessageObject* self, void* Py_UNUSED(closure)) {
+        return PyLong_FromUnsignedLongLong(self->timeout_usec);
+}
+
+static int SdBusMessage_timeout_usec_setter(SdBusMessageObject* self, PyObject* new_value, void* Py_UNUSED(closure)) {
+        if (NULL == new_value) {
+                PyErr_SetString(PyExc_AttributeError, "Can't delete timeout_usec. Assign zero instead.");
+                return -1;
+        }
+        if (!PyLong_Check(new_value)) {
+                PyErr_Format(PyExc_TypeError, "Expected long, got %R", new_value);
+                return -1;
+        }
+        self->timeout_usec = PyLong_AsUnsignedLongLong(new_value);
+        return 0;
+}
+
 static PyObject* SdBusMessage_destination_getter(SdBusMessageObject* self, void* Py_UNUSED(closure)) {
         const char* destination_char_ptr = sd_bus_message_get_destination(self->message_ref);
         if (NULL != destination_char_ptr) {
@@ -1115,6 +1132,7 @@ static PyObject* SdBusMessage_cookie_getter(SdBusMessageObject* self, void* Py_U
 }
 
 static PyGetSetDef SdBusMessage_properies[] = {
+        {"timeout_usec", (getter)SdBusMessage_timeout_usec_getter, (setter)SdBusMessage_timeout_usec_setter, "Timeout in microseconds for this message", NULL},
         {"expect_reply", (getter)SdBusMessage_expect_reply_getter, (setter)SdBusMessage_expect_reply_setter, "Expect reply message?", NULL},
         {"sender", (getter)SdBusMessage_sender_getter, NULL, "Message sender name", NULL},
         {"cookie", (getter)SdBusMessage_cookie_getter, NULL, "unique message cookie", NULL},

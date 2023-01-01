@@ -19,6 +19,7 @@
     Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301 USA
 */
 #include <errno.h>
+#include <systemd/sd-bus.h>
 #include "sd_bus_internals.h"
 
 static void SdBus_dealloc(SdBusObject* self) {
@@ -335,7 +336,7 @@ static PyObject* SdBus_call_async(SdBusObject* self, PyObject* args) {
         SdBusSlotObject* new_slot_object CLEANUP_SD_BUS_SLOT = (SdBusSlotObject*)CALL_PYTHON_AND_CHECK(SD_BUS_PY_CLASS_DUNDER_NEW(SdBusSlot_class));
 
         CALL_SD_BUS_AND_CHECK(
-            sd_bus_call_async(self->sd_bus_ref, &new_slot_object->slot_ref, call_message->message_ref, SdBus_async_callback, new_future, (uint64_t)0));
+            sd_bus_call_async(self->sd_bus_ref, &new_slot_object->slot_ref, call_message->message_ref, SdBus_async_callback, new_future, call_message->timeout_usec));
 
         if (PyObject_SetAttrString(new_future, "_sd_bus_py_slot", (PyObject*)new_slot_object) < 0) {
                 return NULL;
@@ -584,6 +585,110 @@ static PyObject* SdBus_emit_object_added(SdBusObject* self, PyObject* args) {
 }
 
 #ifndef Py_LIMITED_API
+static PyObject* SdBus_emit_object_removed(SdBusObject* self, PyObject* const* args, Py_ssize_t nargs) {
+        SD_BUS_PY_CHECK_ARGS_NUMBER(1);
+        SD_BUS_PY_CHECK_ARG_TYPE(0, PyUnicode_Type);
+
+        const char* removed_object_path = SD_BUS_PY_UNICODE_AS_CHAR_PTR(args[0]);
+#else
+static PyObject* SdBus_emit_object_removed(SdBusObject* self, PyObject* args) {
+        const char* removed_object_path = NULL;
+        CALL_PYTHON_BOOL_CHECK(PyArg_ParseTuple(args, "s", &removed_object_path, NULL));
+#endif
+        CALL_SD_BUS_AND_CHECK(sd_bus_emit_object_removed(self->sd_bus_ref, removed_object_path));
+
+        Py_RETURN_NONE;
+}
+
+#ifndef Py_LIMITED_API
+static PyObject* SdBus_emit_interfaces_added(SdBusObject* self, PyObject* const* args, Py_ssize_t nargs) {
+        if (nargs < 2) {
+                PyErr_SetString(PyExc_TypeError, "Minimum 2 args are required: object path and one interface");
+                return NULL;
+        }
+        SD_BUS_PY_CHECK_ARG_TYPE(0, PyUnicode_Type);
+
+        const char* object_path = SD_BUS_PY_UNICODE_AS_CHAR_PTR(args[0]);
+        const char** interfaces CLEANUP_PYMEM_STR_ARRAY = PyMem_New(const char*, nargs);
+        interfaces[nargs-1] = NULL;
+        for (Py_ssize_t i = 1; i < nargs; ++i) {
+                const char* interface = PyUnicode_AsUTF8(args[i]);
+                if (interface == NULL) {
+                        goto sadtown;
+                }
+                interfaces[i] = interface;
+        }
+#else
+static PyObject* SdBus_emit_interfaces_added(SdBusObject* self, PyObject* args) {
+        Py_ssize_t nargs = PyTuple_Size(args);
+        const char* object_path = NULL;
+        CALL_PYTHON_BOOL_CHECK(PyArg_ParseTuple(args, "s", &object_path, NULL));
+        const char** interfaces CLEANUP_PYMEM_STR_ARRAY = PyMem_New(const char*, nargs);
+        interfaces[nargs-1] = NULL;
+        for (Py_ssize_t i = 1; i < nargs; ++i) {
+                PyObject* interface_bytes CLEANUP_PY_OBJECT = PyUnicode_AsUTF8String(PyTuple_GetItem(args, i));
+                if (interface_bytes == NULL) {
+                        goto sadtown;
+                }
+                const char* interface = PyBytes_AsString(interface_bytes);
+                if (interface == NULL) {
+                        goto sadtown;
+                }
+                interfaces[i] = interface;
+        }
+#endif
+        CALL_SD_BUS_AND_CHECK(sd_bus_emit_interfaces_added_strv(self->sd_bus_ref, object_path, (char**)interfaces));
+
+        Py_RETURN_NONE;
+sadtown:
+        return PyErr_NoMemory();
+}
+
+#ifndef Py_LIMITED_API
+static PyObject* SdBus_emit_interfaces_removed(SdBusObject* self, PyObject* const* args, Py_ssize_t nargs) {
+        if (nargs < 2) {
+                PyErr_SetString(PyExc_TypeError, "Minimum 2 args are required: object path and one interface");
+                return NULL;
+        }
+        SD_BUS_PY_CHECK_ARG_TYPE(0, PyUnicode_Type);
+
+        const char* object_path = SD_BUS_PY_UNICODE_AS_CHAR_PTR(args[0]);
+        const char** interfaces CLEANUP_PYMEM_STR_ARRAY = PyMem_New(const char*, nargs);
+        interfaces[nargs-1] = NULL;
+        for (Py_ssize_t i = 1; i < nargs; ++i) {
+                const char* interface = PyUnicode_AsUTF8(args[i]);
+                if (interface == NULL) {
+                        goto sadtown;
+                }
+                interfaces[i] = interface;
+        }
+#else
+static PyObject* SdBus_emit_interfaces_removed(SdBusObject* self, PyObject* args) {
+        Py_ssize_t nargs = PyTuple_Size(args);
+        const char* object_path = NULL;
+        CALL_PYTHON_BOOL_CHECK(PyArg_ParseTuple(args, "s", &object_path, NULL));
+        const char** interfaces CLEANUP_PYMEM_STR_ARRAY = PyMem_New(const char*, nargs);
+        interfaces[nargs-1] = NULL;
+        for (Py_ssize_t i = 1; i < nargs; ++i) {
+                PyObject* interface_bytes CLEANUP_PY_OBJECT = PyUnicode_AsUTF8String(PyTuple_GetItem(args, i));
+                if (interface_bytes == NULL) {
+                        goto sadtown;
+                }
+                const char* interface = PyBytes_AsString(interface_bytes);
+                if (interface == NULL) {
+                        goto sadtown;
+                }
+                interfaces[i] = interface;
+        }
+#endif
+        CALL_SD_BUS_AND_CHECK(sd_bus_emit_interfaces_removed_strv(self->sd_bus_ref, object_path, (char**)interfaces));
+
+        Py_RETURN_NONE;
+sadtown:
+        return PyErr_NoMemory();
+}
+
+#ifndef Py_LIMITED_API
 static PyObject* SdBus_set_method_call_timeout(SdBusObject* self, PyObject* const* args, Py_ssize_t nargs) {
         SD_BUS_PY_CHECK_ARGS_NUMBER(1);
         SD_BUS_PY_CHECK_ARG_TYPE(0, PyLong_Type);
@@ -639,22 +744,6 @@ static PyObject* SdBus_get_creds_mask(SdBusObject* self, PyObject* Py_UNUSED(arg
         return PyLong_FromUnsignedLongLong(mask);
 }
 
-#ifndef Py_LIMITED_API
-static PyObject* SdBus_emit_object_removed(SdBusObject* self, PyObject* const* args, Py_ssize_t nargs) {
-        SD_BUS_PY_CHECK_ARGS_NUMBER(1);
-        SD_BUS_PY_CHECK_ARG_CHECK_FUNC(0, PyUnicode_Check);
-
-        const char* removed_object_path = SD_BUS_PY_UNICODE_AS_CHAR_PTR(args[0]);
-#else
-static PyObject* SdBus_emit_object_removed(SdBusObject* self, PyObject* args) {
-        const char* removed_object_path = NULL;
-        CALL_PYTHON_BOOL_CHECK(PyArg_ParseTuple(args, "s", &removed_object_path, NULL));
-#endif
-        CALL_SD_BUS_AND_CHECK(sd_bus_emit_object_removed(self->sd_bus_ref, removed_object_path));
-
-        Py_RETURN_NONE;
-}
-
 static PyObject* SdBus_close(SdBusObject* self, PyObject* Py_UNUSED(args)) {
         sd_bus_close(self->sd_bus_ref);
         Py_RETURN_NONE;
@@ -684,12 +773,14 @@ static PyMethodDef SdBus_methods[] = {
     {"request_name", (SD_BUS_PY_FUNC_TYPE)SdBus_request_name, SD_BUS_PY_METH, "Request dbus name blocking"},
     {"add_object_manager", (SD_BUS_PY_FUNC_TYPE)SdBus_add_object_manager, SD_BUS_PY_METH, "Add object manager at the path"},
     {"emit_object_added", (SD_BUS_PY_FUNC_TYPE)SdBus_emit_object_added, SD_BUS_PY_METH, "Emit signal that object was added"},
+    {"emit_object_removed", (SD_BUS_PY_FUNC_TYPE)SdBus_emit_object_removed, SD_BUS_PY_METH, "Emit signal that object was removed"},
+    {"emit_interfaces_added", (SD_BUS_PY_FUNC_TYPE)SdBus_emit_interfaces_added, SD_BUS_PY_METH, "Emit signal the interfaces on an object or a new object have changed"},
+    {"emit_interfaces_removed", (SD_BUS_PY_FUNC_TYPE)SdBus_emit_interfaces_removed, SD_BUS_PY_METH, "Emit signal the interfaces on an object or a new object have changed"},
     {"set_method_call_timeout", (SD_BUS_PY_FUNC_TYPE)SdBus_set_method_call_timeout, SD_BUS_PY_METH, "Set the default method call timeout"},
     {"get_method_call_timeout", (SD_BUS_PY_FUNC_TYPE)SdBus_get_method_call_timeout, SD_BUS_PY_METH, "Get the default method call timeout"},
     {"negotiate_creds", (SD_BUS_PY_FUNC_TYPE)SdBus_negotiate_creds, SD_BUS_PY_METH,
      "Specify a mask of credentials to automatically attach to incoming messages"},
-    {"get_creds_mask", (SD_BUS_PY_FUNC_TYPE)SdBus_get_creds_mask, SD_BUS_PY_METH, "Get the current negotated credentials mask"},
-    {"emit_object_removed", (SD_BUS_PY_FUNC_TYPE)SdBus_emit_object_removed, SD_BUS_PY_METH, "Emit signal that object was removed"},
+    {"get_creds_mask", (SD_BUS_PY_FUNC_TYPE)SdBus_get_creds_mask, SD_BUS_PY_METH, "Get the current negotiated credentials mask"},
     {"close", (PyCFunction)SdBus_close, METH_NOARGS, "Close connection"},
     {"start", (PyCFunction)SdBus_start, METH_NOARGS, "Start connection"},
     {NULL, NULL, 0, NULL},

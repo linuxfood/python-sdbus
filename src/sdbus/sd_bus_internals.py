@@ -123,6 +123,9 @@ class SdBusMessage:
                      ) -> Tuple[DbusCompleteTypes, ...]:
         raise NotImplementedError(__STUB_ERROR)
 
+    def set_allow_interactive_authorization(self, allowed: bool) -> None:
+        raise NotImplementedError(__STUB_ERROR)
+
     def get_credentials(self) -> SdBusCreds:
         raise NotImplementedError(__STUB_ERROR)
 

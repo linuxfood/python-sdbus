@@ -84,12 +84,24 @@
                 return NULL;    \
         }
 
-#define SDBUS_LIBRARY_ERROR_FORMAT(func_call)         \
-        PyErr_Format(exception_lib,                   \
-                     "File: %s Line: %d. " #func_call \
-                     " in function %s returned "      \
-                     "error number: %i",              \
-                     __FILE__, __LINE__, __FUNCTION__, -return_int)
+#define SDBUS_LIBRARY_ERROR_FORMAT(func_call)                 \
+        ({                                                    \
+                sd_bus_error details = SD_BUS_ERROR_NULL;     \
+                sd_bus_error_set_errno(&details, return_int); \
+                PyErr_Format(                                 \
+                        exception_lib,                        \
+                        "File: %s Line: %d. " #func_call      \
+                        " in function %s returned "           \
+                        "%s: %s (error code: %i)",            \
+                        __FILE__,                             \
+                        __LINE__,                             \
+                        __FUNCTION__,                         \
+                        details.name,                         \
+                        details.message,                      \
+                        -return_int                           \
+                );                                            \
+                sd_bus_error_free(&details);                  \
+        })
 
 #define CALL_SD_BUS_AND_CHECK(sd_bus_function)                       \
         ({                                                           \
@@ -268,6 +280,14 @@ __attribute__((used)) static inline void _cleanup_char_ptr(const char** ptr) {
 
 #define CLEANUP_STR_MALLOC __attribute__((cleanup(_cleanup_char_ptr)))
 
+__attribute__((used)) static inline void _cleanup_pymem_char_array(const char*** ptr) {
+        if (*ptr != NULL) {
+                PyMem_Free((void*)*ptr);
+        }
+}
+
+#define CLEANUP_PYMEM_STR_ARRAY __attribute__((cleanup(_cleanup_pymem_char_array)))
+
 __attribute__((used)) static inline void PyObject_cleanup(PyObject** object) {
         Py_XDECREF(*object);
 }
@@ -309,6 +329,7 @@ extern PyObject* SdBusInterface_class;
 typedef struct {
         PyObject_HEAD;
         sd_bus_message* message_ref;
+        uint64_t timeout_usec;
 } SdBusMessageObject;
 
 __attribute__((used)) static inline void cleanup_SdBusMessage(SdBusMessageObject** object) {
