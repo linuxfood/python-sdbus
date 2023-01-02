@@ -147,7 +147,8 @@ class SdBusMessage:
     path: Optional[str] = None
     interface: Optional[str] = None
     member: Optional[str] = None
-    sender: Optional[str] = None
+    sender: str
+    timeout_usec: int
 
 
 class SdBusCreds:

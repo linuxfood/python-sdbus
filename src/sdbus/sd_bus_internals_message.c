@@ -1125,6 +1125,21 @@ static PyObject* SdBusMessage_sender_getter(SdBusMessageObject* self, void* Py_U
         }
 }
 
+static int SdBusMessage_sender_setter(SdBusMessageObject* self, PyObject* new_value, void* Py_UNUSED(closure)) {
+        if (NULL == new_value) {
+                PyErr_SetString(PyExc_AttributeError, "Can't delete sender");
+                return -1;
+        }
+        Py_ssize_t length = -1;
+        const char* new_sender = PyUnicode_AsUTF8AndSize(new_value, &length);
+        if (length == -1) {
+                PyErr_Format(PyExc_TypeError, "str, got %R", new_value);
+                return -1;
+        }
+        CALL_SD_BUS_CHECK_RETURN_NEG1(sd_bus_message_set_sender(self->message_ref, new_sender));
+        return 0;
+}
+
 static PyObject* SdBusMessage_cookie_getter(SdBusMessageObject* self, void* Py_UNUSED(closure)) {
         uint64_t cookie = 0;
         CALL_SD_BUS_AND_CHECK(sd_bus_message_get_cookie(self->message_ref, &cookie));
@@ -1134,7 +1149,7 @@ static PyObject* SdBusMessage_cookie_getter(SdBusMessageObject* self, void* Py_U
 static PyGetSetDef SdBusMessage_properies[] = {
         {"timeout_usec", (getter)SdBusMessage_timeout_usec_getter, (setter)SdBusMessage_timeout_usec_setter, "Timeout in microseconds for this message", NULL},
         {"expect_reply", (getter)SdBusMessage_expect_reply_getter, (setter)SdBusMessage_expect_reply_setter, "Expect reply message?", NULL},
-        {"sender", (getter)SdBusMessage_sender_getter, NULL, "Message sender name", NULL},
+        {"sender", (getter)SdBusMessage_sender_getter, (setter)SdBusMessage_sender_setter, "Message sender name", NULL},
         {"cookie", (getter)SdBusMessage_cookie_getter, NULL, "unique message cookie", NULL},
         {"destination", (getter)SdBusMessage_destination_getter, NULL, "destination bus name", NULL},
         {"interface", (getter)SdBusMessage_interface_getter, NULL, "dbus interface name", NULL},
