@@ -1027,6 +1027,20 @@ static SdBusMessageObject* SdBusMessage_create_error_reply(SdBusMessageObject* s
         return new_reply_message;
 }
 
+#ifndef Py_LIMITED_API
+static PyObject* SdBusMessage_set_allow_interactive_authorization(SdBusMessageObject* self, PyObject* const* args, Py_ssize_t nargs) {
+        SD_BUS_PY_CHECK_ARGS_NUMBER(1);
+        SD_BUS_PY_CHECK_ARG_CHECK_FUNC(0, PyBool_Check);
+        int is_allowed = Py_IsTrue(args[0]);
+#else
+static PyObject* SdBusMessage_set_allow_interactive_authorization(SdBusMessageObject* self, PyObject* args) {
+        int is_allowed = 0;
+        CALL_PYTHON_BOOL_CHECK(PyArg_ParseTuple(args, "p", &is_allowed, NULL));
+#endif
+        CALL_SD_BUS_AND_CHECK(sd_bus_message_set_allow_interactive_authorization(self->message_ref, is_allowed));
+        Py_RETURN_NONE;
+}
+
 static PyMethodDef SdBusMessage_methods[] = {
     {"append_data", (SD_BUS_PY_FUNC_TYPE)SdBusMessage_append_data, SD_BUS_PY_METH, "Append basic data based on signature."},
     {"open_container", (SD_BUS_PY_FUNC_TYPE)SdBusMessage_open_container, SD_BUS_PY_METH, "Open container for writing"},
@@ -1040,6 +1054,7 @@ static PyMethodDef SdBusMessage_methods[] = {
     {"create_reply", (PyCFunction)SdBusMessage_create_reply, METH_NOARGS, "Create reply message"},
     {"create_error_reply", (SD_BUS_PY_FUNC_TYPE)SdBusMessage_create_error_reply, SD_BUS_PY_METH, "Create error reply with error name and error message"},
     {"send", (PyCFunction)SdBusMessage_send, METH_NOARGS, "Queue message to be sent"},
+    {"set_allow_interactive_authorization", (SD_BUS_PY_FUNC_TYPE)SdBusMessage_set_allow_interactive_authorization, SD_BUS_PY_METH, "Set whether the receiver should do interactive authorization."},
     {NULL, NULL, 0, NULL},
 };
 

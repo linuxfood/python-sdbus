@@ -587,7 +587,7 @@ static PyObject* SdBus_emit_object_added(SdBusObject* self, PyObject* args) {
 #ifndef Py_LIMITED_API
 static PyObject* SdBus_emit_object_removed(SdBusObject* self, PyObject* const* args, Py_ssize_t nargs) {
         SD_BUS_PY_CHECK_ARGS_NUMBER(1);
-        SD_BUS_PY_CHECK_ARG_TYPE(0, PyUnicode_Type);
+        SD_BUS_PY_CHECK_ARG_CHECK_FUNC(0, PyUnicode_Check);
 
         const char* removed_object_path = SD_BUS_PY_UNICODE_AS_CHAR_PTR(args[0]);
 #else
@@ -606,7 +606,7 @@ static PyObject* SdBus_emit_interfaces_added(SdBusObject* self, PyObject* const*
                 PyErr_SetString(PyExc_TypeError, "Minimum 2 args are required: object path and one interface");
                 return NULL;
         }
-        SD_BUS_PY_CHECK_ARG_TYPE(0, PyUnicode_Type);
+        SD_BUS_PY_CHECK_ARG_CHECK_FUNC(0, PyUnicode_Check);
 
         const char* object_path = SD_BUS_PY_UNICODE_AS_CHAR_PTR(args[0]);
         const char** interfaces CLEANUP_PYMEM_STR_ARRAY = PyMem_New(const char*, nargs);
@@ -650,7 +650,7 @@ static PyObject* SdBus_emit_interfaces_removed(SdBusObject* self, PyObject* cons
                 PyErr_SetString(PyExc_TypeError, "Minimum 2 args are required: object path and one interface");
                 return NULL;
         }
-        SD_BUS_PY_CHECK_ARG_TYPE(0, PyUnicode_Type);
+        SD_BUS_PY_CHECK_ARG_CHECK_FUNC(0, PyUnicode_Check);
 
         const char* object_path = SD_BUS_PY_UNICODE_AS_CHAR_PTR(args[0]);
         const char** interfaces CLEANUP_PYMEM_STR_ARRAY = PyMem_New(const char*, nargs);
@@ -691,7 +691,7 @@ sadtown:
 #ifndef Py_LIMITED_API
 static PyObject* SdBus_set_method_call_timeout(SdBusObject* self, PyObject* const* args, Py_ssize_t nargs) {
         SD_BUS_PY_CHECK_ARGS_NUMBER(1);
-        SD_BUS_PY_CHECK_ARG_TYPE(0, PyLong_Type);
+        SD_BUS_PY_CHECK_ARG_CHECK_FUNC(0, PyLong_Check);
 
         uint64_t timeout_usecs = PyLong_AsUnsignedLongLong(args[0]);
 #else
@@ -719,8 +719,8 @@ static PyObject* SdBus_get_method_call_timeout(SdBusObject* self, PyObject* Py_U
 #ifndef Py_LIMITED_API
 static PyObject* SdBus_negotiate_creds(SdBusObject* self, PyObject* const* args, Py_ssize_t nargs) {
         SD_BUS_PY_CHECK_ARGS_NUMBER(2);
-        SD_BUS_PY_CHECK_ARG_TYPE(0, PyBool_Type);
-        SD_BUS_PY_CHECK_ARG_TYPE(1, PyLong_Type);
+        SD_BUS_PY_CHECK_ARG_CHECK_FUNC(0, PyBool_Check);
+        SD_BUS_PY_CHECK_ARG_CHECK_FUNC(1, PyLong_Check);
         int mask_on = args[0] == Py_True;
         uint64_t mask = PyLong_AsUnsignedLongLong(args[1]);
 #else

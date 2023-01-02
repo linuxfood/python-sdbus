@@ -295,7 +295,7 @@ static PyObject* SdBusCreds_get_owner_uid(SdBusCredsObject* self, PyObject* Py_U
 #ifndef Py_LIMITED_API
 static PyObject* SdBusCreds_has_effective_cap(SdBusCredsObject* self, PyObject* const* args, Py_ssize_t nargs) {
         SD_BUS_PY_CHECK_ARGS_NUMBER(1);
-        SD_BUS_PY_CHECK_ARG_TYPE(0, PyLong_Type);
+        SD_BUS_PY_CHECK_ARG_CHECK_FUNC(0, PyLong_Check);
         int capability = PyLong_AsLong(args[0]);
 #else
 static PyObject* SdBusCreds_has_effective_cap(SdBusCredsObject* self, PyObject* args) {
@@ -312,7 +312,7 @@ static PyObject* SdBusCreds_has_effective_cap(SdBusCredsObject* self, PyObject* 
 #ifndef Py_LIMITED_API
 static PyObject* SdBusCreds_has_permitted_cap(SdBusCredsObject* self, PyObject* const* args, Py_ssize_t nargs) {
         SD_BUS_PY_CHECK_ARGS_NUMBER(1);
-        SD_BUS_PY_CHECK_ARG_TYPE(0, PyLong_Type);
+        SD_BUS_PY_CHECK_ARG_CHECK_FUNC(0, PyLong_Check);
         int capability = PyLong_AsLong(args[0]);
 #else
 static PyObject* SdBusCreds_has_permitted_cap(SdBusCredsObject* self, PyObject* args) {
@@ -329,7 +329,7 @@ static PyObject* SdBusCreds_has_permitted_cap(SdBusCredsObject* self, PyObject* 
 #ifndef Py_LIMITED_API
 static PyObject* SdBusCreds_has_inheritable_cap(SdBusCredsObject* self, PyObject* const* args, Py_ssize_t nargs) {
         SD_BUS_PY_CHECK_ARGS_NUMBER(1);
-        SD_BUS_PY_CHECK_ARG_TYPE(0, PyLong_Type);
+        SD_BUS_PY_CHECK_ARG_CHECK_FUNC(0, PyLong_Check);
         int capability = PyLong_AsLong(args[0]);
 #else
 static PyObject* SdBusCreds_has_inheritable_cap(SdBusCredsObject* self, PyObject* args) {
@@ -346,7 +346,7 @@ static PyObject* SdBusCreds_has_inheritable_cap(SdBusCredsObject* self, PyObject
 #ifndef Py_LIMITED_API
 static PyObject* SdBusCreds_has_bounding_cap(SdBusCredsObject* self, PyObject* const* args, Py_ssize_t nargs) {
         SD_BUS_PY_CHECK_ARGS_NUMBER(1);
-        SD_BUS_PY_CHECK_ARG_TYPE(0, PyLong_Type);
+        SD_BUS_PY_CHECK_ARG_CHECK_FUNC(0, PyLong_Check);
         int capability = PyLong_AsLong(args[0]);
 #else
 static PyObject* SdBusCreds_has_bounding_cap(SdBusCredsObject* self, PyObject* args) {

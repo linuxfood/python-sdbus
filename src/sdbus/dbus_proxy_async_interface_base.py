@@ -265,6 +265,11 @@ class DbusInterfaceBaseAsync(metaclass=DbusInterfaceMetaAsync):
                               interface_name)
             self._activated_interfaces.append(new_interface)
 
+    def drop_from_dbus(self) -> None:
+        self._attached_bus = None
+        self._serving_object_path = None
+        self._activated_interfaces = []
+
     def _connect(
         self,
         service_name: str,
